@@ -1,0 +1,219 @@
+> library(emmeans)
+> library(lme4)
+
+## Set up data files
+> eff_data <- read.csv("Effect_No_Outliers.csv")
+> prop_data <- read.csv("Proportion_Master_Table.csv")
+> sig_data <- read.csv("Signif_No_Outliers.csv")
+
+## Create models
+> eff_model <- glmer(AbsEffect ~ Category + Data.Type + DGRP.lines + (1|Study), data = eff_data, family = Gamma(link = "inverse"))
+> sig_model <- glmer(transformed_pvalue ~ Category + Data.Type + DGRP.lines + (1|Study), data = sig_data, family = Gamma(link = "inverse"))
+> prop_model <- lmer(transformed_proportion ~ Category + Data.Type + DGRP.lines + (1|Study), data = prop_data)
+
+> summary(prop_model)
+Linear mixed model fit by REML ['lmerMod']
+Formula: transformed_proportion ~ Category + Data.Type + DGRP.lines +      (1 | Study)
+   Data: prop_data
+
+REML criterion at convergence: 192.6
+
+Scaled residuals: 
+     Min       1Q   Median       3Q      Max 
+-2.11612 -0.57871 -0.07801  0.36304  2.72983 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ Study    (Intercept) 0.2383   0.4882  
+ Residual             0.5018   0.7084  
+Number of obs: 78, groups:  Study, 26
+
+Fixed effects:
+                               Estimate Std. Error t value
+(Intercept)                  -11.500513   0.721772 -15.934
+CategoryMorphological          0.812583   0.407277   1.995
+CategoryPhysiological          0.129280   0.313918   0.412
+Data.TypeContinuous  -0.324886   0.526347  -0.617
+DGRP.lines                     0.006444   0.003106   2.075
+
+Correlation of Fixed Effects:
+            (Intr) CtgryM CtgryP Phn.CC
+CtgryMrphlg -0.102                     
+CtgryPhyslg -0.159  0.386              
+Phntyp.CtgC -0.709 -0.094  0.078       
+DGRP.lines  -0.667 -0.014 -0.182  0.051
+
+> summary(eff_model)
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: Gamma  ( inverse )
+Formula: AbsEffect ~ Category + Data.Type + DGRP.lines + (1 |      Study)
+   Data: eff_data
+
+     AIC      BIC   logLik deviance df.resid 
+ 13718.0  13763.7  -6852.0  13704.0     5086 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.5520 -0.6261 -0.0556  0.4324 11.1678 
+
+Random effects:
+ Groups   Name        Variance Std.Dev.
+ Study    (Intercept) 61.2839  7.8284  
+ Residual              0.4116  0.6416  
+Number of obs: 5093, groups:  Study, 24
+
+Fixed effects:
+                             Estimate Std. Error t value Pr(>|z|)
+(Intercept)                  11.38183    8.78245   1.296    0.195
+CategoryMorphological        -3.70336    4.57945  -0.809    0.419
+CategoryPhysiological         6.92297    4.41585   1.568    0.117
+Data.TypeContinuous -1.69727    6.36591  -0.267    0.790
+DGRP.lines                   -0.03943    0.04551  -0.866    0.386
+
+Correlation of Fixed Effects:
+            (Intr) CtgryM CtgryP Phn.CC
+CtgryMrphlg -0.163                     
+CtgryPhyslg -0.142  0.749              
+Phntyp.CtgC -0.557 -0.088 -0.040       
+DGRP.lines  -0.679 -0.037 -0.118 -0.093
+
+> summary(sig_model)
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: Gamma  ( inverse )
+Formula: transformed_pvalue ~ Category + Data.Type + DGRP.lines +      (1 | Study)
+   Data: sig_data
+
+     AIC      BIC   logLik deviance df.resid 
+ 10587.6  10634.5  -5286.8  10573.6     5971 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.2637 -0.6652 -0.2773  0.3941 14.5510 
+
+Random effects:
+ Groups   Name        Variance  Std.Dev.
+ Study    (Intercept) 1.581e-05 0.003976
+ Residual             1.241e-02 0.111422
+Number of obs: 5978, groups:  Study, 31
+
+Fixed effects:
+                               Estimate Std. Error t value Pr(>|z|)    
+(Intercept)                   1.875e-01  7.583e-03  24.726   <2e-16 ***
+CategoryMorphological        -5.449e-03  3.669e-03  -1.485    0.138    
+CategoryPhysiological        -1.337e-03  2.466e-03  -0.542    0.588    
+Data.TypeContinuous -2.943e-03  5.215e-03  -0.564    0.573    
+DGRP.lines                   -2.055e-05  3.335e-05  -0.616    0.538    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) CtgryM CtgryP Phn.CC
+CtgryMrphlg -0.218                     
+CtgryPhyslg -0.291  0.428              
+Phntyp.CtgC -0.629 -0.088  0.113       
+DGRP.lines  -0.736  0.158  0.071  0.028
+optimizer (Nelder_Mead) convergence code: 0 (OK)
+Model failed to converge with max|grad| = 0.400485 (tol = 0.002, component 1)
+Model is nearly unidentifiable: very large eigenvalue
+ - Rescale variables?
+
+## Pariwise contrasts
+
+> contrast(emmeans(eff_model, ~Category, type = "response"), "pairwise")
+Note: Use 'contrast(regrid(object), ...)' to obtain contrasts of back-transformed estimates
+ contrast                      estimate   SE  df z.ratio p.value
+ Behavioral - Morphological        3.70 4.58 Inf   0.809  0.6976
+ Behavioral - Physiological       -6.92 4.42 Inf  -1.568  0.2597
+ Morphological - Physiological   -10.63 3.19 Inf  -3.329  0.0025
+
+Results are averaged over the levels of: Data.Type
+Note: contrasts are still on the inverse scale 
+P value adjustment: tukey method for comparing a family of 3 estimates 
+
+> contrast(emmeans(sig_model, ~Category, type = "response"), "pairwise")
+Note: Use 'contrast(regrid(object), ...)' to obtain contrasts of back-transformed estimates
+ contrast                      estimate      SE  df z.ratio p.value
+ Behavioral - Morphological     0.00545 0.00367 Inf   1.485  0.2981
+ Behavioral - Physiological     0.00134 0.00247 Inf   0.542  0.8505
+ Morphological - Physiological -0.00411 0.00344 Inf  -1.197  0.4551
+
+Results are averaged over the levels of: Data.Type 
+Note: contrasts are still on the inverse scale 
+P value adjustment: tukey method for comparing a family of 3 estimates 
+
+> contrast(emmeans(prop_model, ~Category, type = "response"), "pairwise")
+Cannot use mode = "kenward-roger" because *pbkrtest* package is not installed
+Cannot use mode = "satterthwaite" because *lmerTest* package is not installed
+ contrast                      estimate    SE  df z.ratio p.value
+ Behavioral - Morphological      -0.813 0.407 Inf  -1.995  0.1134
+ Behavioral - Physiological      -0.129 0.314 Inf  -0.412  0.9108
+ Morphological - Physiological    0.683 0.407 Inf   1.679  0.2134
+
+Results are averaged over the levels of: Data.Type 
+Degrees-of-freedom method: asymptotic 
+P value adjustment: tukey method for comparing a family of 3 estimates 
+
+## Characterize trait categories
+> sigB <- sig_data[which(sig_data$Category == "Behavioral"),]
+> sigM <- sig_data[which(sig_data$Category == "Morphological"),]
+> sigPhys <- sig_data[which(sig_data$Category == "Physiological"),]
+> effB <- eff_data[which(eff_data$Category == "Behavioral"),]
+> effM <- eff_data[which(eff_data$Category == "Morphological"),]
+> effPhys <- eff_data[which(eff_data$Category == "Physiological"),]
+> mean(sigB$transformed_pvalue)
+[1] 5.473602
+> mean(sigM$transformed_pvalue)
+[1] 5.667991
+> mean(sigPhys$transformed_pvalue)
+[1] 5.718517
+> mean(effB$AbsEffect)
+[1] 4.658729
+> mean(effM$AbsEffect)
+[1] 1.027543
+> mean(effPhys$AbsEffect)
+[1] 3.30169
+> var(sigB$transformed_pvalue)
+[1] 0.2268441
+> var(sigM$transformed_pvalue)
+[1] 0.3872035
+> var(sigPhys$transformed_pvalue)
+[1] 0.5821381
+> var(effB$transformed_pvalue)
+[1] 0.2325323
+> var(effM$transformed_pvalue)
+[1] 0.413087
+> var(effPhys$transformed_pvalue)
+[1] 0.5885303
+> library(moments)
+Warning message:
+package ‘moments’ was built under R version 4.1.3 
+> kurtosis(sigB$transformed_pvalue)
+[1] 7.213569
+> kurtosis(sigM$transformed_pvalue)
+[1] 5.763947
+> kurtosis(sigPhys$transformed_pvalue)
+[1] 20.96944
+> var(effB$AbsEffect)
+[1] 26.1374
+> var(effM$AbsEffect)
+[1] 0.6767078
+> var(effPhys$AbsEffect)
+[1] 7.614851
+> kurtosis(effB$transformed_pvalue)
+[1] 7.223805
+> kurtosis(effM$transformed_pvalue)
+[1] 5.334251
+> kurtosis(effPhys$transformed_pvalue)
+[1] 22.07361
+> kurtosis(effB$AbsEffect)
+[1] 2.806221
+> kurtosis(effM$AbsEffect)
+[1] 5.162888
+> kurtosis(effPhys$AbsEffect)
+[1] 7.625378
+> skewness(sigB$transformed_pvalue)
+[1] 1.759188
+> skewness(sigM$transformed_pvalue)
+[1] 1.529259
+> skewness(sigPhys$transformed_pvalue)
+[1] 2.99086
